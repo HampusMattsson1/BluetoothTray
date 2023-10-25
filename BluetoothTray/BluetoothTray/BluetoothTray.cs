@@ -14,8 +14,15 @@ namespace BluetoothTray
 
         public BluetoothTray()
         {
+            MenuItem[] bluetoothItems =
+            {
+                new MenuItem("bt1", Exit)
+            };
+
+
             MenuItem[] menuItems =
             {
+                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Bluetooth Devices", Exit, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("test", Exit),
                 new MenuItem("Exit", Exit)
             };
@@ -26,6 +33,11 @@ namespace BluetoothTray
                 ContextMenu = new ContextMenu(menuItems),
                 Visible = true
             };
+
+            void Show_Click(Object sender, System.EventArgs e)
+            {
+                
+            }
         }
 
         void Exit(object sender, EventArgs e)
@@ -34,6 +46,11 @@ namespace BluetoothTray
 
             Application.Exit();
         }
+
+    }
+
+    public static class GetBluetoothInfo
+    {
 
     }
 }
