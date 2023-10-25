@@ -40,7 +40,8 @@ namespace BluetoothTray
             };
 
             // Custom icon
-            CreateTextIcon("J55");
+            //CreateTextIcon("J50\n12");
+            CreateDoubleIcon();
 
             void Show_Click(Object sender, System.EventArgs e)
             {
@@ -67,10 +68,32 @@ namespace BluetoothTray
 
             g.Clear(Color.Transparent);
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
-            g.DrawString(str, fontToUse, brushToUse, -2, 0);
+            g.DrawString(str, fontToUse, brushToUse, 0, -4);
             hIcon = (bitmapText.GetHicon());
             notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
             //DestroyIcon(hIcon.ToInt32);
+        }
+
+
+        public void CreateDoubleIcon()
+        {
+            Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Bold, GraphicsUnit.Pixel);
+            Brush brushToUse = new SolidBrush(Color.White);
+
+            Bitmap bitmap = new Bitmap(16, 16);
+            Graphics g = System.Drawing.Graphics.FromImage(bitmap);
+
+            IntPtr hIcon;
+
+            g.Clear(Color.Transparent);
+            //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint;
+            //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            
+            g.DrawString("jab", fontToUse, new SolidBrush(Color.Yellow), 0, -4, StringFormat.GenericTypographic);
+            g.DrawString("50", fontToUse, new SolidBrush(Color.White), 0, 5);
+
+            // Create an Icon from the Bitmap and assign it to the NotifyIcon
+            notifyIcon.Icon = Icon.FromHandle(bitmap.GetHicon());
         }
 
     }
