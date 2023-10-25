@@ -16,6 +16,9 @@ namespace BluetoothTray
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            var bluetoothTray = new BluetoothTray();
+
             Application.Run(new Form1());
         }
     }
