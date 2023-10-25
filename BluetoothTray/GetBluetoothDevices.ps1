@@ -1,0 +1,1 @@
+Get-PnpDevice | Where-Object {$_.Class -eq "Bluetooth"} | ForEach-Object { $_.FriendlyName }
