@@ -12,24 +12,23 @@ namespace BluetoothTray
 {
     public class BluetoothTray : ApplicationContext
     {
-        private NotifyIcon notifyIcon;
+        private Form1 form;
+        public NotifyIcon notifyIcon;
+        public string prefix = "";
+        private string selectedBluetoothDevice = "";
+        private string lastDeviceBattery = "";
+        private int minuteInterval = 5;
 
-        public BluetoothTray()
+        public BluetoothTray(Form1 form)
         {
             var bluetoothDevices = GetBluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
 
-            //MenuItem[] bluetoothItems =
-            //{
-            //    new MenuItem("bt1", Exit),
-
-            //};
-            MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, Exit)).ToArray();
+            MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
 
             MenuItem[] menuItems =
             {
-                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Bluetooth Devices", Exit, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
-                new MenuItem("test", Exit),
+                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Select Bluetooth Device", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("Exit", Exit)
             };
 
@@ -40,31 +39,46 @@ namespace BluetoothTray
                 Visible = true
             };
 
-            // Custom icon
-            //CreateTextIcon("J50\n12");
-            CreateDoubleIcon("jab", "50");
+            form.trayIcon = this;
+            this.form = form;
 
-            void Show_Click(Object sender, System.EventArgs e)
+
+            notifyIcon.MouseClick += (sender, e) =>
             {
-                
-            }
+                if (e.Button == MouseButtons.Left)
+                {
+                    this.form.Show();
+                    this.form.WindowState = FormWindowState.Normal;
+                    this.form.BringToFront();
+                }
+            };
 
+            // Set icon
+            CreateDoubleIcon("----", "----");
+
+            
             var startTimeSpan = TimeSpan.Zero;
             //var periodTimeSpan = TimeSpan.FromMinutes(5);
             var interval = TimeSpan.FromSeconds(10);
 
             var updateStatus = new System.Threading.Timer((e) =>
             {
-                //notifyIcon.Visible = !notifyIcon.Visible;
-                string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
-                notifyIcon.Text = "UPDATED " + updateTime;
+                if (selectedBluetoothDevice != "")
+                {
+                    //notifyIcon.Visible = !notifyIcon.Visible;
+                    string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
+                    notifyIcon.Text = "UPDATED " + updateTime;
 
-                string newDeviceStatus = GetBluetoothStatus.GetSingleBluetoothDeviceBattery("Xbox Wireless Controller");
-                Console.WriteLine(newDeviceStatus);
+                    string newDeviceStatus = GetBluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
+                    lastDeviceBattery = newDeviceStatus;
+                    Console.WriteLine(newDeviceStatus);
 
-                Console.WriteLine("UPDATED " + updateTime);
+                    Console.WriteLine("UPDATED " + updateTime);
 
-                CreateDoubleIcon("xbx", newDeviceStatus);
+                    Console.WriteLine("Prefix: " + prefix);
+
+                    CreateDoubleIcon(prefix, newDeviceStatus);
+                }
             }, null, startTimeSpan, interval);
         }
 
@@ -73,6 +87,22 @@ namespace BluetoothTray
             notifyIcon.Visible = false;
 
             Application.Exit();
+        }
+        void Show_Click(Object sender, System.EventArgs e) { }
+
+
+        void ChangeActiveBluetoothDevice(object sender, EventArgs e)
+        {
+            MenuItem clickedItem = sender as MenuItem;
+
+            Console.WriteLine("new device selected: " + clickedItem.Text);
+
+            selectedBluetoothDevice = clickedItem.Text;
+        }
+
+        public void RefreshIcon()
+        {
+            CreateDoubleIcon(prefix, lastDeviceBattery);
         }
 
 

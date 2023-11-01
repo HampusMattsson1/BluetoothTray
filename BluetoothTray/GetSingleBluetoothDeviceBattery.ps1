@@ -11,5 +11,5 @@ try {
 if ($BatteryLevel) {
 	Write-Output "$BatteryLevel"
 } else {
-	Write-Output $deviceName
+	Write-Output "err"
 }

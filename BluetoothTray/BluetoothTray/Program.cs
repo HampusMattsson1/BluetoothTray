@@ -17,10 +17,11 @@ namespace BluetoothTray
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var bluetoothTray = new BluetoothTray();
+            var form = new Form1();
+            var bluetoothTray = new BluetoothTray(form);
             //var bluetoothTray2 = new BluetoothTray();
 
-            Application.Run(new Form1());
+            Application.Run();
         }
     }
 }

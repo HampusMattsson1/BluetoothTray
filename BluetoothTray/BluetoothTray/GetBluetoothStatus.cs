@@ -14,7 +14,8 @@ namespace BluetoothTray
         {
             var path = Path.GetFullPath("../../../" + "GetBluetoothBatteryDevices.ps1");
 
-            var result = GetBluetoothBatteryDevices(path);
+            //var result = GetBluetoothBatteryDevices(path);
+            var result = GetBluetoothBatteryDevices();
 
             //result = new string[]
             //{
