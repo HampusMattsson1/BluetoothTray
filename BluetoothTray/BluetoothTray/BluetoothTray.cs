@@ -16,13 +16,14 @@ namespace BluetoothTray
 
         public BluetoothTray()
         {
-            var bluetoothDevices = GetBluetoothInfo.GetBluetoothDevicesWithBatteryProcentage();
+            var bluetoothDevices = GetBluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
 
-            MenuItem[] bluetoothItems =
-            {
-                new MenuItem("bt1", Exit),
-                new MenuItem(bluetoothDevices[0], Exit)
-            };
+            //MenuItem[] bluetoothItems =
+            //{
+            //    new MenuItem("bt1", Exit),
+
+            //};
+            MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, Exit)).ToArray();
 
 
             MenuItem[] menuItems =
@@ -41,12 +42,30 @@ namespace BluetoothTray
 
             // Custom icon
             //CreateTextIcon("J50\n12");
-            CreateDoubleIcon();
+            CreateDoubleIcon("jab", "50");
 
             void Show_Click(Object sender, System.EventArgs e)
             {
                 
             }
+
+            var startTimeSpan = TimeSpan.Zero;
+            //var periodTimeSpan = TimeSpan.FromMinutes(5);
+            var interval = TimeSpan.FromSeconds(10);
+
+            var updateStatus = new System.Threading.Timer((e) =>
+            {
+                //notifyIcon.Visible = !notifyIcon.Visible;
+                string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
+                notifyIcon.Text = "UPDATED " + updateTime;
+
+                string newDeviceStatus = GetBluetoothStatus.GetSingleBluetoothDeviceBattery("Xbox Wireless Controller");
+                Console.WriteLine(newDeviceStatus);
+
+                Console.WriteLine("UPDATED " + updateTime);
+
+                CreateDoubleIcon("xbx", newDeviceStatus);
+            }, null, startTimeSpan, interval);
         }
 
         void Exit(object sender, EventArgs e)
@@ -75,7 +94,7 @@ namespace BluetoothTray
         }
 
 
-        public void CreateDoubleIcon()
+        public void CreateDoubleIcon(string topText, string bottomText)
         {
             Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Bold, GraphicsUnit.Pixel);
             Brush brushToUse = new SolidBrush(Color.White);
@@ -89,58 +108,12 @@ namespace BluetoothTray
             //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint;
             //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             
-            g.DrawString("jab", fontToUse, new SolidBrush(Color.Yellow), 0, -4, StringFormat.GenericTypographic);
-            g.DrawString("50", fontToUse, new SolidBrush(Color.White), 0, 5);
+            g.DrawString(topText, fontToUse, new SolidBrush(Color.Yellow), 0, -4, StringFormat.GenericTypographic);
+            g.DrawString(bottomText, fontToUse, new SolidBrush(Color.White), 0, 5);
 
             // Create an Icon from the Bitmap and assign it to the NotifyIcon
             notifyIcon.Icon = Icon.FromHandle(bitmap.GetHicon());
         }
 
-    }
-
-    public static class GetBluetoothInfo
-    {
-        public static string[] GetBluetoothDevicesWithBatteryProcentage()
-        {
-            var path = Path.GetFullPath("../../../"+ "GetBluetoothBatteryDevices.ps1");
-
-            var result = GetBluetoothBatteryDevices(path);
-
-            //result = new string[]
-            //{
-            //    path
-            //};
-
-            return result;
-        }
-
-        public static string[] GetBluetoothBatteryDevices(string script = "C:\\Users\\hjm\\source\\repos\\BTTaskbar\\GetBluetoothDevices.ps1")
-        {
-            var startInfo = new ProcessStartInfo()
-            {
-                FileName = "powershell.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File {script}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-            //Process.Start(startInfo);
-
-            List<string> devices = new List<string>();
-
-            int counter = 0;
-            using (var process = Process.Start(startInfo))
-            {
-                while (!process.StandardOutput.EndOfStream)
-                {
-                    var line = process.StandardOutput.ReadLine();
-                    //Console.WriteLine(line);
-                    devices.Add(line);
-                    counter++;
-                }
-            }
-
-            return devices.ToArray();
-        }
     }
 }
