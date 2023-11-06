@@ -8,9 +8,16 @@ using System.Threading.Tasks;
 
 namespace BluetoothTray
 {
-    public static class GetBluetoothStatus
+    public class GetBluetoothStatus
     {
-        public static string[] GetBluetoothDevicesWithBatteryProcentage()
+        private string scriptLocation = "";
+
+        public GetBluetoothStatus(string scriptLocation)
+        {
+            this.scriptLocation = scriptLocation;
+        }
+
+        public string[] GetBluetoothDevicesWithBatteryProcentage()
         {
             var path = Path.GetFullPath("../../../" + "GetBluetoothBatteryDevices.ps1");
 
@@ -25,8 +32,10 @@ namespace BluetoothTray
             return result;
         }
 
-        public static string[] GetBluetoothBatteryDevices(string script = "C:\\Users\\hjm\\source\\repos\\BluetoothTray\\BluetoothTray\\GetBluetoothDevices.ps1")
+        public string[] GetBluetoothBatteryDevices()
         {
+            string script = scriptLocation + "\\GetBluetoothDevices.ps1";
+
             var startInfo = new ProcessStartInfo()
             {
                 FileName = "powershell.exe",
@@ -54,9 +63,9 @@ namespace BluetoothTray
             return devices.ToArray();
         }
 
-        public static string GetSingleBluetoothDeviceBattery(string deviceName)
+        public string GetSingleBluetoothDeviceBattery(string deviceName)
         {
-            string script = "C:\\Users\\hjm\\source\\repos\\BluetoothTray\\BluetoothTray\\GetSingleBluetoothDeviceBattery.ps1";
+            string script = scriptLocation + "\\GetSingleBluetoothDeviceBattery.ps1";
 
             var runScript = new ProcessStartInfo()
             {

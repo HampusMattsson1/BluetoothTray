@@ -22,7 +22,7 @@ namespace BluetoothTray
         private void button1_Click(object sender, EventArgs e)
         {
             trayIcon.prefix = prefixValue.Text;
-            trayIcon.RefreshIcon();
+            trayIcon.UpdateBattery();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)

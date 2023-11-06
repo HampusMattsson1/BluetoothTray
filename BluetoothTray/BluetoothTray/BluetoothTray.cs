@@ -13,15 +13,20 @@ namespace BluetoothTray
     public class BluetoothTray : ApplicationContext
     {
         private Form1 form;
+        private GetBluetoothStatus bluetoothStatus;
         public NotifyIcon notifyIcon;
         public string prefix = "";
         private string selectedBluetoothDevice = "";
         private string lastDeviceBattery = "";
+
         private int minuteInterval = 5;
+        private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\.."));
 
         public BluetoothTray(Form1 form)
         {
-            var bluetoothDevices = GetBluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
+            bluetoothStatus = new GetBluetoothStatus(scriptDirectory);
+
+            var bluetoothDevices = bluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
 
             MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
@@ -59,27 +64,31 @@ namespace BluetoothTray
             
             var startTimeSpan = TimeSpan.Zero;
             //var periodTimeSpan = TimeSpan.FromMinutes(5);
-            var interval = TimeSpan.FromSeconds(10);
+            var interval = TimeSpan.FromMinutes(10);
 
             var updateStatus = new System.Threading.Timer((e) =>
             {
                 if (selectedBluetoothDevice != "")
                 {
-                    //notifyIcon.Visible = !notifyIcon.Visible;
-                    string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
-                    notifyIcon.Text = "UPDATED " + updateTime;
-
-                    string newDeviceStatus = GetBluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
-                    lastDeviceBattery = newDeviceStatus;
-                    Console.WriteLine(newDeviceStatus);
-
-                    Console.WriteLine("UPDATED " + updateTime);
-
-                    Console.WriteLine("Prefix: " + prefix);
-
-                    CreateDoubleIcon(prefix, newDeviceStatus);
+                    UpdateBattery();
                 }
             }, null, startTimeSpan, interval);
+        }
+
+        public void UpdateBattery()
+        {
+            string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
+            notifyIcon.Text = "UPDATED " + updateTime;
+
+            string newDeviceStatus = bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
+            lastDeviceBattery = newDeviceStatus;
+            Console.WriteLine(newDeviceStatus);
+
+            Console.WriteLine("UPDATED " + updateTime);
+
+            Console.WriteLine("Prefix: " + prefix);
+
+            CreateDoubleIcon(prefix, newDeviceStatus);
         }
 
         void Exit(object sender, EventArgs e)
@@ -98,11 +107,7 @@ namespace BluetoothTray
             Console.WriteLine("new device selected: " + clickedItem.Text);
 
             selectedBluetoothDevice = clickedItem.Text;
-        }
-
-        public void RefreshIcon()
-        {
-            CreateDoubleIcon(prefix, lastDeviceBattery);
+            UpdateBattery();
         }
 
 
