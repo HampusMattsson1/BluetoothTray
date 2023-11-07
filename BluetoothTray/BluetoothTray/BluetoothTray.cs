@@ -20,7 +20,7 @@ namespace BluetoothTray
         private string lastDeviceBattery = "";
 
         private int minuteInterval = 5;
-        private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\.."));
+        private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"../../.."));
 
         public BluetoothTray(Form1 form)
         {

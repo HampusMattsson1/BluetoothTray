@@ -5,16 +5,22 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Management.Automation;
 
 namespace BluetoothTray
 {
     public class GetBluetoothStatus
     {
+        private PowerShell powershellInstance;
         private string scriptLocation = "";
 
         public GetBluetoothStatus(string scriptLocation)
         {
             this.scriptLocation = scriptLocation;
+
+            powershellInstance = PowerShell.Create();
+            powershellInstance.AddScript("cd '" + scriptLocation + "'");
+            powershellInstance.Invoke();
         }
 
         public string[] GetBluetoothDevicesWithBatteryProcentage()
@@ -34,30 +40,18 @@ namespace BluetoothTray
 
         public string[] GetBluetoothBatteryDevices()
         {
-            string script = scriptLocation + "\\GetBluetoothDevices.ps1";
+            string script = "GetBluetoothDevices.ps1";
 
-            var startInfo = new ProcessStartInfo()
-            {
-                FileName = "powershell.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File {script}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-            //Process.Start(startInfo);
+            powershellInstance.Commands.Clear();
+            powershellInstance.Commands.AddCommand($"./{script}");
+            var powershellResult = powershellInstance.Invoke();
 
             List<string> devices = new List<string>();
 
-            int counter = 0;
-            using (var process = Process.Start(startInfo))
+            foreach (var line in powershellResult)
             {
-                while (!process.StandardOutput.EndOfStream)
-                {
-                    var line = process.StandardOutput.ReadLine();
-                    //Console.WriteLine(line);
-                    devices.Add(line);
-                    counter++;
-                }
+                if (line != null)
+                    devices.Add(line.BaseObject.ToString());
             }
 
             return devices.ToArray();
@@ -65,24 +59,19 @@ namespace BluetoothTray
 
         public string GetSingleBluetoothDeviceBattery(string deviceName)
         {
-            string script = scriptLocation + "\\GetSingleBluetoothDeviceBattery.ps1";
+            string script = "GetSingleBluetoothDeviceBattery.ps1";
 
-            var runScript = new ProcessStartInfo()
-            {
-                FileName = "powershell.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File {script} \"{deviceName}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
+            powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
+            var powershellResult = powershellInstance.Invoke();
 
             string result = "";
 
-            using (var process = Process.Start(runScript))
-            {
-                result = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
+            foreach (var line in powershellResult) {
+            
+                if (line != null)
+                    result = line.BaseObject.ToString();
             }
+
             Console.WriteLine("RESULT: " + result);
 
             return result;
