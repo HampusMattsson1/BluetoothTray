@@ -33,7 +33,8 @@ namespace BluetoothTray
 
             MenuItem[] menuItems =
             {
-                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Select Bluetooth Device", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
+                new MenuItem("Update now", UpdateBattery),
+                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Bluetooth Device", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("Exit", Exit)
             };
 
@@ -78,7 +79,7 @@ namespace BluetoothTray
         public void UpdateBattery()
         {
             string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
-            notifyIcon.Text = "UPDATED " + updateTime;
+            notifyIcon.Text = selectedBluetoothDevice + "\r\nUPDATED " + updateTime;
 
             string newDeviceStatus = bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
             lastDeviceBattery = newDeviceStatus;
@@ -89,6 +90,11 @@ namespace BluetoothTray
             Console.WriteLine("Prefix: " + prefix);
 
             CreateDoubleIcon(prefix, newDeviceStatus);
+        }
+
+        private void UpdateBattery(object sender, EventArgs e)
+        {
+            UpdateBattery();
         }
 
         void Exit(object sender, EventArgs e)
