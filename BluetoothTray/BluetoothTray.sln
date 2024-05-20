@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BluetoothTray", "BluetoothTray\BluetoothTray.csproj", "{C470836B-16BD-44E3-A700-0E9E01223F41}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "BluetoothTraySetup", "BluetoothTraySetup\BluetoothTraySetup.vdproj", "{15F4CCE6-E22E-4864-B372-CC7BFD3508B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{C470836B-16BD-44E3-A700-0E9E01223F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C470836B-16BD-44E3-A700-0E9E01223F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C470836B-16BD-44E3-A700-0E9E01223F41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F4CCE6-E22E-4864-B372-CC7BFD3508B6}.Debug|Any CPU.ActiveCfg = Debug
+		{15F4CCE6-E22E-4864-B372-CC7BFD3508B6}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

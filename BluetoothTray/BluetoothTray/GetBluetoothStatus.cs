@@ -25,7 +25,7 @@ namespace BluetoothTray
 
         public string[] GetBluetoothDevicesWithBatteryProcentage()
         {
-            var path = Path.GetFullPath("../../../" + "GetBluetoothBatteryDevices.ps1");
+            //var path = Path.GetFullPath("../../../" + "GetBluetoothBatteryDevices.ps1");
 
             //var result = GetBluetoothBatteryDevices(path);
             var result = GetBluetoothBatteryDevices();
@@ -40,10 +40,12 @@ namespace BluetoothTray
 
         public string[] GetBluetoothBatteryDevices()
         {
-            string script = "GetBluetoothDevices.ps1";
+            //string script = "GetBluetoothDevices.ps1";
+            string script = "Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | ForEach-Object { $_.FriendlyName }";
 
             powershellInstance.Commands.Clear();
-            powershellInstance.Commands.AddCommand($"./{script}");
+            //powershellInstance.Commands.AddCommand($"./{script}");
+            powershellInstance.Commands.AddScript(script);
             var powershellResult = powershellInstance.Invoke();
 
             List<string> devices = new List<string>();
@@ -59,9 +61,11 @@ namespace BluetoothTray
 
         public string GetSingleBluetoothDeviceBattery(string deviceName)
         {
-            string script = "GetSingleBluetoothDeviceBattery.ps1";
+            //string script = "GetSingleBluetoothDeviceBattery.ps1";
+            string script = "$device = Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | Where-Object {$_.FriendlyName -eq \"" + deviceName + "\" }\r\ntry {\r\n\t$BatteryLevel = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2' | Where-Object { $_.Type -ne 'Empty' } | Select-Object -ExpandProperty Data\r\n} catch {}\r\n\r\nif ($BatteryLevel) {\r\n\tWrite-Output \"$BatteryLevel\"\r\n} else {\r\n\tWrite-Output \"err\"\r\n}";
 
-            powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
+            //powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
+            powershellInstance.Commands.AddScript(script);
             var powershellResult = powershellInstance.Invoke();
 
             string result = "";
