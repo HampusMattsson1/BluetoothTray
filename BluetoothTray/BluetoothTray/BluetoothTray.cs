@@ -117,43 +117,50 @@ namespace BluetoothTray
         }
 
 
-        public void CreateTextIcon(string str)
-        {
-            Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Regular, GraphicsUnit.Pixel);
-            Brush brushToUse = new SolidBrush(Color.White);
-            Bitmap bitmapText = new Bitmap(16, 16);
-            Graphics g = System.Drawing.Graphics.FromImage(bitmapText);
+        //public void CreateTextIcon(string str)
+        //{
+        //    Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Regular, GraphicsUnit.Pixel);
+        //    Brush brushToUse = new SolidBrush(Color.White);
+        //    Bitmap bitmapText = new Bitmap(16, 16);
+        //    Graphics g = System.Drawing.Graphics.FromImage(bitmapText);
 
-            IntPtr hIcon;
+        //    IntPtr hIcon;
 
-            g.Clear(Color.Transparent);
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
-            g.DrawString(str, fontToUse, brushToUse, 0, -4);
-            hIcon = (bitmapText.GetHicon());
-            notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
-            //DestroyIcon(hIcon.ToInt32);
-        }
+        //    g.Clear(Color.Transparent);
+        //    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;
+        //    g.DrawString(str, fontToUse, brushToUse, 0, -4);
+        //    hIcon = (bitmapText.GetHicon());
+        //    notifyIcon.Icon = System.Drawing.Icon.FromHandle(hIcon);
+        //    //DestroyIcon(hIcon.ToInt32);
+        //}
 
 
         public void CreateDoubleIcon(string topText, string bottomText)
         {
-            Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Bold, GraphicsUnit.Pixel);
-            Brush brushToUse = new SolidBrush(Color.White);
+            using (Font fontToUse = new Font("Trebuchet MS", 10, FontStyle.Bold, GraphicsUnit.Pixel))
+            using (Brush brushToUse = new SolidBrush(Color.White))
+            using (Bitmap bitmap = new Bitmap(16, 16))
+            using (Graphics g = System.Drawing.Graphics.FromImage(bitmap))
+            {
+                IntPtr hIcon;
 
-            Bitmap bitmap = new Bitmap(16, 16);
-            Graphics g = System.Drawing.Graphics.FromImage(bitmap);
+                g.Clear(Color.Transparent);
+                //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint;
+                //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            IntPtr hIcon;
+                using (Brush yellowBrush = new SolidBrush(Color.Yellow))
+                using (Brush whiteBrush = new SolidBrush(Color.White))
+                {
+                    g.DrawString(topText, fontToUse, yellowBrush, 0, -4, StringFormat.GenericTypographic);
+                    g.DrawString(bottomText, fontToUse, whiteBrush, 0, 5);
+                }
 
-            g.Clear(Color.Transparent);
-            //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint;
-            //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-            
-            g.DrawString(topText, fontToUse, new SolidBrush(Color.Yellow), 0, -4, StringFormat.GenericTypographic);
-            g.DrawString(bottomText, fontToUse, new SolidBrush(Color.White), 0, 5);
-
-            // Create an Icon from the Bitmap and assign it to the NotifyIcon
-            notifyIcon.Icon = Icon.FromHandle(bitmap.GetHicon());
+                // Create an Icon from the Bitmap and assign it to the NotifyIcon
+                using (Icon icon = Icon.FromHandle(bitmap.GetHicon()))
+                {
+                    notifyIcon.Icon = (Icon)icon.Clone();
+                }
+            }
         }
 
     }
