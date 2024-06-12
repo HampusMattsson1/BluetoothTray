@@ -80,5 +80,23 @@ namespace BluetoothTray
 
             return result;
         }
+
+        public string[] GetAnyBatteryDevices(string name)
+        {
+            string script = "Get-PnpDevice -FriendlyName '*" + name + "*' | Select-Object Class,FriendlyName,@{L=\"Battery\";E={(Get-PnpDeviceProperty -DeviceID $_.PNPDeviceID -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2').Data}} | Select-Object -ExpandProperty FriendlyName";
+
+            powershellInstance.Commands.AddScript(script);
+            var powershellResult = powershellInstance.Invoke();
+
+            List<string> devices = new List<string>();
+
+            foreach (var line in powershellResult)
+            {
+                if (line != null)
+                    devices.Add(line.BaseObject.ToString());
+            }
+
+            return devices.ToArray();
+        }
     }
 }
