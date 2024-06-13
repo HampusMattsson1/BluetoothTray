@@ -13,16 +13,21 @@ namespace BluetoothTray
     public class BluetoothTray : ApplicationContext
     {
         private Form1 form;
+        private SearchForm searchForm;
         private GetBluetoothStatus bluetoothStatus;
         public NotifyIcon notifyIcon;
         public string prefix = "";
         private string selectedBluetoothDevice = "";
         private string lastDeviceBattery = "";
 
+        MenuItem[] menuItems = null;
+
         private int minuteInterval = 5;
         private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"../../.."));
 
-        public BluetoothTray(Form1 form)
+        private MenuItem[] anydevices = null;
+
+        public BluetoothTray(Form1 form, SearchForm searchForm)
         {
             bluetoothStatus = new GetBluetoothStatus(scriptDirectory);
 
@@ -31,10 +36,12 @@ namespace BluetoothTray
             MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
 
-            MenuItem[] menuItems =
+            menuItems = new MenuItem[]
             {
                 new MenuItem("Update now", UpdateBattery),
-                new MenuItem(MenuMerge.Add, 0, Shortcut.CtrlS, "Bluetooth Device", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
+                new MenuItem("Search for any device", OpenSearchForm),
+                new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Any device results", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), anydevices),
+                new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Bluetooth devices", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("Exit", Exit)
             };
 
@@ -46,7 +53,9 @@ namespace BluetoothTray
             };
 
             form.trayIcon = this;
+            searchForm.trayIcon = this;
             this.form = form;
+            this.searchForm = searchForm;
 
 
             notifyIcon.MouseClick += (sender, e) =>
@@ -76,7 +85,7 @@ namespace BluetoothTray
             }, null, startTimeSpan, interval);
         }
 
-        public void UpdateBattery()
+        public void UpdateBattery(object sender = null, EventArgs e = null)
         {
             string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
             notifyIcon.Text = selectedBluetoothDevice + "\r\nUPDATED " + updateTime;
@@ -90,11 +99,6 @@ namespace BluetoothTray
             Console.WriteLine("Prefix: " + prefix);
 
             CreateDoubleIcon(prefix, newDeviceStatus);
-        }
-
-        private void UpdateBattery(object sender, EventArgs e)
-        {
-            UpdateBattery();
         }
 
         void Exit(object sender, EventArgs e)
@@ -114,6 +118,28 @@ namespace BluetoothTray
 
             selectedBluetoothDevice = clickedItem.Text;
             UpdateBattery();
+        }
+
+        void OpenSearchForm(object sender, EventArgs e)
+        {
+            this.searchForm.Show();
+            this.searchForm.WindowState = FormWindowState.Normal;
+            this.searchForm.BringToFront();
+        }
+
+        public void GetBatteryDevices(string name)
+        {
+            var a = bluetoothStatus.GetAnyBatteryDevices(name);
+
+            anydevices = a.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
+
+            MenuItem item = menuItems[2];
+            item.MenuItems.Clear();
+
+            foreach (MenuItem menuItem in anydevices)
+            {
+                item.MenuItems.Add(menuItem);
+            }
         }
 
 
@@ -142,8 +168,6 @@ namespace BluetoothTray
             using (Bitmap bitmap = new Bitmap(16, 16))
             using (Graphics g = System.Drawing.Graphics.FromImage(bitmap))
             {
-                IntPtr hIcon;
-
                 g.Clear(Color.Transparent);
                 //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint;
                 //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
