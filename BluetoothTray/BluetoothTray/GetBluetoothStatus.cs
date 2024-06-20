@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Management.Automation;
+using System.Management;
 
 namespace BluetoothTray
 {
@@ -40,20 +41,25 @@ namespace BluetoothTray
 
         public string[] GetBluetoothBatteryDevices()
         {
-            //string script = "GetBluetoothDevices.ps1";
-            string script = "Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | ForEach-Object { $_.FriendlyName }";
+            //string script = "Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | ForEach-Object { $_.FriendlyName }";
 
-            powershellInstance.Commands.Clear();
-            //powershellInstance.Commands.AddCommand($"./{script}");
-            powershellInstance.Commands.AddScript(script);
-            var powershellResult = powershellInstance.Invoke();
+            //powershellInstance.Commands.Clear();
+            //powershellInstance.Commands.AddScript(script);
+            //var powershellResult = powershellInstance.Invoke();
 
             List<string> devices = new List<string>();
 
-            foreach (var line in powershellResult)
+            //foreach (var line in powershellResult)
+            //{
+            //    if (line != null)
+            //        devices.Add(line.BaseObject.ToString());
+            //}
+
+            var searcher = new ManagementObjectSearcher("root\\CIMv2", "SELECT * FROM Win32_PnPEntity WHERE PNPClass = 'Bluetooth'");
+
+            foreach (var queryObj in searcher.Get())
             {
-                if (line != null)
-                    devices.Add(line.BaseObject.ToString());
+                devices.Add(queryObj["Name"].ToString());
             }
 
             return devices.ToArray();
