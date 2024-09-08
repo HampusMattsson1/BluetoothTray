@@ -7,6 +7,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Management.Automation;
 using System.Management;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Enumeration;
+using Windows.Storage.Streams;
 
 namespace BluetoothTray
 {
@@ -24,19 +28,46 @@ namespace BluetoothTray
             powershellInstance.Invoke();
         }
 
-        public string[] GetBluetoothDevicesWithBatteryProcentage()
+        public async Task<string[]> GetBluetoothDevicesWithBatteryProcentage()
         {
             //var path = Path.GetFullPath("../../../" + "GetBluetoothBatteryDevices.ps1");
 
             //var result = GetBluetoothBatteryDevices(path);
-            var result = GetBluetoothBatteryDevices();
+            //var result = GetBluetoothBatteryDevices();
 
             //result = new string[]
             //{
             //    path
             //};
 
-            return result;
+            //return result;
+
+            var bluetoothDevices = new List<string>();
+
+            var deviceSelector = BluetoothLEDevice.GetDeviceSelector();
+            var devices = await DeviceInformation.FindAllAsync(deviceSelector);
+            var device = await BluetoothLEDevice.FromIdAsync(devices[0].Id);
+
+            // Get the battery level characteristic
+            var services = await device.GetGattServicesAsync();
+            foreach (var service in services.Services)
+            {
+                var deviceName = service.Device.Name;
+                var characteristics = await service.GetCharacteristicsAsync();
+                foreach (var characteristic in characteristics.Characteristics)
+                {
+                    if (characteristic.Uuid == GattCharacteristicUuids.BatteryLevel)
+                    {
+                        var result = await characteristic.ReadValueAsync();
+                        var reader = DataReader.FromBuffer(result.Value);
+                        byte batteryLevel = reader.ReadByte();
+                        bluetoothDevices.Add(deviceName);
+                        Console.WriteLine($"Device: {deviceName}, Battery Level: {batteryLevel}%");
+                    }
+                }
+            }
+
+            return bluetoothDevices.ToArray();
         }
 
         public string[] GetBluetoothBatteryDevices()
@@ -65,26 +96,50 @@ namespace BluetoothTray
             return devices.ToArray();
         }
 
-        public string GetSingleBluetoothDeviceBattery(string deviceName)
+        public async Task<string> GetSingleBluetoothDeviceBattery(string deviceName)
         {
             //string script = "GetSingleBluetoothDeviceBattery.ps1";
-            string script = "$device = Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | Where-Object {$_.FriendlyName -eq \"" + deviceName + "\" }\r\ntry {\r\n\t$BatteryLevel = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2' | Where-Object { $_.Type -ne 'Empty' } | Select-Object -ExpandProperty Data\r\n} catch {}\r\n\r\nif ($BatteryLevel) {\r\n\tWrite-Output \"$BatteryLevel\"\r\n} else {\r\n\tWrite-Output \"err\"\r\n}";
+            //string script = "$device = Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | Where-Object {$_.FriendlyName -eq \"" + deviceName + "\" }\r\ntry {\r\n\t$BatteryLevel = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2' | Where-Object { $_.Type -ne 'Empty' } | Select-Object -ExpandProperty Data\r\n} catch {}\r\n\r\nif ($BatteryLevel) {\r\n\tWrite-Output \"$BatteryLevel\"\r\n} else {\r\n\tWrite-Output \"err\"\r\n}";
 
-            //powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
-            powershellInstance.Commands.AddScript(script);
-            var powershellResult = powershellInstance.Invoke();
+            ////powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
+            //powershellInstance.Commands.AddScript(script);
+            //var powershellResult = powershellInstance.Invoke();
 
-            string result = "";
+            //string result = "";
 
-            foreach (var line in powershellResult) {
-            
-                if (line != null)
-                    result = line.BaseObject.ToString();
+            //foreach (var line in powershellResult) {
+
+            //    if (line != null)
+            //        result = line.BaseObject.ToString();
+            //}
+
+            //Console.WriteLine("RESULT: " + result);
+
+            //return result;
+
+            var deviceSelector = BluetoothLEDevice.GetDeviceSelector();
+            var devices = await DeviceInformation.FindAllAsync(deviceSelector);
+            var device = await BluetoothLEDevice.FromIdAsync(devices[0].Id);
+
+            // Get the battery level characteristic
+            var services = await device.GetGattServicesAsync();
+            foreach (var service in services.Services)
+            {
+                var name = service.Device.Name;
+                var characteristics = await service.GetCharacteristicsAsync();
+                foreach (var characteristic in characteristics.Characteristics)
+                {
+                    if (characteristic.Uuid == GattCharacteristicUuids.BatteryLevel && name == deviceName)
+                    {
+                        var result = await characteristic.ReadValueAsync();
+                        var reader = DataReader.FromBuffer(result.Value);
+                        byte batteryLevel = reader.ReadByte();
+                        //Console.WriteLine($"Device: {name}, Battery Level: {batteryLevel}%");
+                        return batteryLevel.ToString();
+                    }
+                }
             }
-
-            Console.WriteLine("RESULT: " + result);
-
-            return result;
+            return "err";
         }
 
         public string[] GetAnyBatteryDevices(string name)

@@ -31,7 +31,10 @@ namespace BluetoothTray
         {
             bluetoothStatus = new GetBluetoothStatus(scriptDirectory);
 
-            var bluetoothDevices = bluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
+            var bluetoothDevices = Task.Run(async () =>
+            {
+                return await bluetoothStatus.GetBluetoothDevicesWithBatteryProcentage();
+            }).Result;
 
             MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
@@ -90,7 +93,11 @@ namespace BluetoothTray
             string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
             notifyIcon.Text = selectedBluetoothDevice + "\r\nUPDATED " + updateTime;
 
-            string newDeviceStatus = bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
+            //string newDeviceStatus = bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
+            var newDeviceStatus = Task.Run(async () =>
+            {
+                return await bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
+            }).Result;
             lastDeviceBattery = newDeviceStatus;
             Console.WriteLine(newDeviceStatus);
 
