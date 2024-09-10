@@ -21,7 +21,7 @@ namespace BluetoothTray
 
         private void button1_Click(object sender, EventArgs e)
         {
-            trayIcon.GetBatteryDevices(searchValue.Text);
+            //trayIcon.GetBatteryDevices(searchValue.Text);
         }
     }
 }

@@ -24,8 +24,6 @@ namespace BluetoothTray
 
         private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"../../.."));
 
-        private MenuItem[] anydevices = null;
-
         private System.Threading.Timer updateTimer;
         private TimeSpan updateInterval = TimeSpan.FromMinutes(5);
 
@@ -41,12 +39,12 @@ namespace BluetoothTray
             MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
             MenuItem[] refreshIntervals = { new MenuItem("1 min", ChangeRefreshInterval), new MenuItem("5 min", ChangeRefreshInterval), new MenuItem("10 min", ChangeRefreshInterval), new MenuItem("15 min", ChangeRefreshInterval) };
+            refreshIntervals[1].Checked = true;
 
             menuItems = new MenuItem[]
             {
                 new MenuItem("Update now", UpdateBattery),
-                new MenuItem("Search for any device", OpenSearchForm),
-                new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Any device results", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), anydevices),
+                //new MenuItem("Search for any device", OpenSearchForm),
                 new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Set refresh interval", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), refreshIntervals),
                 new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Bluetooth devices", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("Exit", Exit)
@@ -161,21 +159,6 @@ namespace BluetoothTray
             this.searchForm.Show();
             this.searchForm.WindowState = FormWindowState.Normal;
             this.searchForm.BringToFront();
-        }
-
-        public void GetBatteryDevices(string name)
-        {
-            var a = bluetoothStatus.GetAnyBatteryDevices(name);
-
-            anydevices = a.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
-
-            MenuItem item = menuItems[2];
-            item.MenuItems.Clear();
-
-            foreach (MenuItem menuItem in anydevices)
-            {
-                item.MenuItems.Add(menuItem);
-            }
         }
 
 
