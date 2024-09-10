@@ -22,10 +22,12 @@ namespace BluetoothTray
 
         MenuItem[] menuItems = null;
 
-        private int minuteInterval = 5;
         private string scriptDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"../../.."));
 
         private MenuItem[] anydevices = null;
+
+        private System.Threading.Timer updateTimer;
+        private TimeSpan updateInterval = TimeSpan.FromMinutes(5);
 
         public BluetoothTray(Form1 form, SearchForm searchForm)
         {
@@ -38,12 +40,14 @@ namespace BluetoothTray
 
             MenuItem[] bluetoothItems = bluetoothDevices.Select(b => new MenuItem(b, ChangeActiveBluetoothDevice)).ToArray();
 
+            MenuItem[] refreshIntervals = { new MenuItem("1 min", ChangeRefreshInterval), new MenuItem("5 min", ChangeRefreshInterval), new MenuItem("10 min", ChangeRefreshInterval), new MenuItem("15 min", ChangeRefreshInterval) };
 
             menuItems = new MenuItem[]
             {
                 new MenuItem("Update now", UpdateBattery),
                 new MenuItem("Search for any device", OpenSearchForm),
                 new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Any device results", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), anydevices),
+                new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Set refresh interval", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), refreshIntervals),
                 new MenuItem(MenuMerge.Add, 0, Shortcut.None, "Bluetooth devices", Show_Click, new System.EventHandler(Show_Click), new System.EventHandler(Show_Click), bluetoothItems),
                 new MenuItem("Exit", Exit)
             };
@@ -74,24 +78,28 @@ namespace BluetoothTray
             // Set icon
             CreateDoubleIcon("----", "----");
 
-            
+            SetUpdateStatus();
+        }
+
+        private void SetUpdateStatus()
+        {
             var startTimeSpan = TimeSpan.Zero;
             //var periodTimeSpan = TimeSpan.FromMinutes(5);
-            var interval = TimeSpan.FromMinutes(10);
 
-            var updateStatus = new System.Threading.Timer((e) =>
+            updateTimer = new System.Threading.Timer((e) =>
             {
                 if (selectedBluetoothDevice != "")
                 {
                     UpdateBattery();
                 }
-            }, null, startTimeSpan, interval);
+            }, null, startTimeSpan, updateInterval);
         }
 
         public void UpdateBattery(object sender = null, EventArgs e = null)
         {
             string updateTime = DateTime.Now.TimeOfDay.ToString(@"hh\:mm\:ss");
-            notifyIcon.Text = selectedBluetoothDevice + "\r\nUPDATED " + updateTime;
+            var textString = $"Update Interval: {updateInterval.ToString("mm")}\r\nUpdated: {updateTime}";
+            notifyIcon.Text = textString;
 
             //string newDeviceStatus = bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
             var newDeviceStatus = Task.Run(async () =>
@@ -99,11 +107,11 @@ namespace BluetoothTray
                 return await bluetoothStatus.GetSingleBluetoothDeviceBattery(selectedBluetoothDevice);
             }).Result;
             lastDeviceBattery = newDeviceStatus;
-            Console.WriteLine(newDeviceStatus);
+            //Console.WriteLine(newDeviceStatus);
 
-            Console.WriteLine("UPDATED " + updateTime);
+            //Console.WriteLine("UPDATED " + updateTime);
 
-            Console.WriteLine("Prefix: " + prefix);
+            //Console.WriteLine("Prefix: " + prefix);
 
             CreateDoubleIcon(prefix, newDeviceStatus);
         }
@@ -117,11 +125,32 @@ namespace BluetoothTray
         void Show_Click(Object sender, System.EventArgs e) { }
 
 
+        void ChangeRefreshInterval(object sender, EventArgs e)
+        {
+            MenuItem clickedItem = sender as MenuItem;
+            foreach (MenuItem item in clickedItem.Parent.MenuItems)
+            {
+                item.Checked = false;
+            }
+            clickedItem.Checked = true;
+
+            Console.WriteLine("new device selected: " + clickedItem.Text);
+
+            updateInterval = TimeSpan.FromMinutes(Int32.Parse(clickedItem.Text.Split(' ')[0]));
+
+            SetUpdateStatus();
+        }
+
         void ChangeActiveBluetoothDevice(object sender, EventArgs e)
         {
             MenuItem clickedItem = sender as MenuItem;
+            foreach (MenuItem item in clickedItem.Parent.MenuItems)
+            {
+                item.Checked = false;
+            }
+            clickedItem.Checked = true;
 
-            Console.WriteLine("new device selected: " + clickedItem.Text);
+            //Console.WriteLine("new device selected: " + clickedItem.Text);
 
             selectedBluetoothDevice = clickedItem.Text;
             UpdateBattery();

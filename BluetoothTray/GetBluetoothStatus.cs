@@ -117,25 +117,54 @@ namespace BluetoothTray
 
             //return result;
 
+
+
+
+
+            //var deviceSelector = BluetoothLEDevice.GetDeviceSelector();
+            //var devices = await DeviceInformation.FindAllAsync(deviceSelector);
+            //var device = await BluetoothLEDevice.FromIdAsync(devices[0].Id);
+
+            //// Get the battery level characteristic
+            //var services = await device.GetGattServicesAsync();
+            //foreach (var service in services.Services)
+            //{
+            //    var name = service.Device.Name;
+            //    var characteristics = await service.GetCharacteristicsAsync();
+            //    foreach (var characteristic in characteristics.Characteristics)
+            //    {
+            //        if (characteristic.Uuid == GattCharacteristicUuids.BatteryLevel && name == deviceName)
+            //        {
+            //            var result = await characteristic.ReadValueAsync();
+            //            var reader = DataReader.FromBuffer(result.Value);
+            //            byte batteryLevel = reader.ReadByte();
+            //            //Console.WriteLine($"Device: {name}, Battery Level: {batteryLevel}%");
+            //            return batteryLevel.ToString();
+            //        }
+            //    }
+            //}
             var deviceSelector = BluetoothLEDevice.GetDeviceSelector();
             var devices = await DeviceInformation.FindAllAsync(deviceSelector);
-            var device = await BluetoothLEDevice.FromIdAsync(devices[0].Id);
 
-            // Get the battery level characteristic
-            var services = await device.GetGattServicesAsync();
-            foreach (var service in services.Services)
+            foreach (var deviceInfo in devices)
             {
-                var name = service.Device.Name;
-                var characteristics = await service.GetCharacteristicsAsync();
-                foreach (var characteristic in characteristics.Characteristics)
+                var device = await BluetoothLEDevice.FromIdAsync(deviceInfo.Id);
+                if (device.Name == deviceName)
                 {
-                    if (characteristic.Uuid == GattCharacteristicUuids.BatteryLevel && name == deviceName)
+                    var services = await device.GetGattServicesAsync();
+                    foreach (var service in services.Services)
                     {
-                        var result = await characteristic.ReadValueAsync();
-                        var reader = DataReader.FromBuffer(result.Value);
-                        byte batteryLevel = reader.ReadByte();
-                        //Console.WriteLine($"Device: {name}, Battery Level: {batteryLevel}%");
-                        return batteryLevel.ToString();
+                        var characteristics = await service.GetCharacteristicsAsync();
+                        foreach (var characteristic in characteristics.Characteristics)
+                        {
+                            if (characteristic.Uuid == GattCharacteristicUuids.BatteryLevel)
+                            {
+                                var result = await characteristic.ReadValueAsync();
+                                var reader = DataReader.FromBuffer(result.Value);
+                                byte batteryLevel = reader.ReadByte();
+                                return batteryLevel.ToString();
+                            }
+                        }
                     }
                 }
             }
