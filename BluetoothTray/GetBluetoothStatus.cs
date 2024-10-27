@@ -99,11 +99,12 @@ namespace BluetoothTray
         public async Task<string> GetSingleBluetoothDeviceBattery(string deviceName)
         {
             //string script = "GetSingleBluetoothDeviceBattery.ps1";
-            //string script = "$device = Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | Where-Object {$_.FriendlyName -eq \"" + deviceName + "\" }\r\ntry {\r\n\t$BatteryLevel = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2' | Where-Object { $_.Type -ne 'Empty' } | Select-Object -ExpandProperty Data\r\n} catch {}\r\n\r\nif ($BatteryLevel) {\r\n\tWrite-Output \"$BatteryLevel\"\r\n} else {\r\n\tWrite-Output \"err\"\r\n}";
+            string script = "$device = Get-PnpDevice | Where-Object {$_.Class -eq \"Bluetooth\"} | Where-Object {$_.FriendlyName -eq \"" + deviceName + "\" }\r\ntry {\r\n\t$BatteryLevel = Get-PnpDeviceProperty -InstanceId $device.InstanceId -KeyName '{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2' | Where-Object { $_.Type -ne 'Empty' } | Select-Object -ExpandProperty Data\r\n} catch {}\r\n\r\nif ($BatteryLevel) {\r\n\tWrite-Output \"$BatteryLevel\"\r\n} else {\r\n\tWrite-Output \"err\"\r\n}";
 
             ////powershellInstance.Commands.AddScript($"./{script} \"{deviceName}\"");
-            //powershellInstance.Commands.AddScript(script);
-            //var powershellResult = powershellInstance.Invoke();
+            powershellInstance.Commands.AddScript(script);
+            var powershellResult = powershellInstance.Invoke().First().BaseObject;
+            return powershellResult.ToString();
 
             //string result = "";
 
